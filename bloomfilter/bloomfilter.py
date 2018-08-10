@@ -18,12 +18,14 @@ class BloomFilter(object):
             )
             self.__num_hashes = round(self.__size * math.log(2) / self.__max_items)
 
-            self.__array = bitarray(self.__size)
+            self.__array = bitarray(self.__size, endian='little')
             self.__array.setall(False)
+        else:
+            self.__array = bitarray(endian='little')
 
     @classmethod
     def load(cls, fp):
-        # bf = cls()
+        bloom_filter = cls()
         # bf.__array = bitarray()
         # bf.__array.fromfile(fp)
         pass
