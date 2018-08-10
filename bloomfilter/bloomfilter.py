@@ -37,8 +37,8 @@ class BloomFilter(object):
             bloom_filter.__filter.frombytes(fp.read(n - header_size))
         else:
             bloom_filter.__filter.frombytes(fp.read())
-        assert (
-                bloom_filter.__filter.length() == filter_size
+        assert bloom_filter.__filter.length() == filter_size or bloom_filter.__filter.length() == filter_size + (
+                8 - filter_size % 8
         ), "Bloom filter size mismatch!"
         bloom_filter.__size_used = size_used
         bloom_filter.__size = size
@@ -138,7 +138,7 @@ class ScalableBloomFilter(object):
         filter_sizes = unpack(header, fp.read(calcsize(header)))
         for filter_size in filter_sizes:
             scalable_bloom_filter.__filters.append(BloomFilter.load(fp, filter_size))
-        return cls
+        return scalable_bloom_filter
 
     def save(self, fp):
         fp.write(
@@ -201,12 +201,3 @@ class ScalableBloomFilter(object):
             if item in bloom_filter:
                 return True
         return False
-
-
-def main():
-    
-    pass
-
-
-if __name__ == "__main__":
-    main()
