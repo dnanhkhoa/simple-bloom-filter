@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import math
 import mmh3
-from enum import Enum
+from enum import IntEnum
 from struct import pack, unpack, calcsize
 
 from bitarray import bitarray
@@ -32,7 +32,7 @@ class BloomFilter(object):
         fp_prob, size_used, size, filter_size, num_hashes = unpack(
             header, fp.read(header_size)
         )
-        bloom_filter = cls(size=None, fp_prob=fp_prob)
+        bloom_filter = cls(size=0, fp_prob=fp_prob)
         if n >= header_size:
             bloom_filter.__filter.frombytes(fp.read(n - header_size))
         else:
@@ -91,7 +91,7 @@ class BloomFilter(object):
         return True
 
 
-class SizeGrowthRate(Enum):
+class SizeGrowthRate(IntEnum):
     SMALL = 2
     LARGE = 4
 
@@ -133,10 +133,12 @@ class ScalableBloomFilter(object):
             size_growth_rate=size_growth_rate,
             fp_prob_rate=fp_prob_rate,
         )
+        scalable_bloom_filter.__initial_size = initial_size
         header = "<" + "Q" * num_filters
         filter_sizes = unpack(header, fp.read(calcsize(header)))
         for filter_size in filter_sizes:
             scalable_bloom_filter.__filters.append(BloomFilter.load(fp, filter_size))
+        return cls
 
     def save(self, fp):
         fp.write(
@@ -151,22 +153,37 @@ class ScalableBloomFilter(object):
         )
         header_pos = fp.tell()
         header = "<" + "Q" * len(self.__filters)
-        fp.write("\0" * calcsize(header))
+        fp.write(b"\0" * calcsize(header))
         filter_sizes = []
-        for f in self.__filters:
+        for bloom_filter in self.__filters:
             begin = fp.tell()
-            f.save(fp)
+            bloom_filter.save(fp)
             filter_sizes.append(fp.tell() - begin)
 
         fp.seek(header_pos)
-        fp.write(pack(header_pos, *filter_sizes))
+        fp.write(pack(header, *filter_sizes))
+
+    @property
+    def num_filters(self):
+        return len(self.__filters)
 
     @property
     def size(self):
-        return sum(f.size for f in self.__filters)
+        return sum(bloom_filter.size for bloom_filter in self.__filters)
+
+    @property
+    def fp_prob(self):
+        return 1 - math.exp(
+            sum(
+                map(
+                    lambda bloom_filter: math.log(1 - bloom_filter.fp_prob),
+                    self.__filters,
+                )
+            )
+        )
 
     def __len__(self):
-        return sum(len(f) for f in self.__filters)
+        return sum(len(bloom_filter) for bloom_filter in self.__filters)
 
     def add(self, item):
         if item not in self:
@@ -180,15 +197,14 @@ class ScalableBloomFilter(object):
             bloom_filter.add(item)
 
     def __contains__(self, item):
-        for f in reversed(self.__filters):
-            if item in f:
+        for bloom_filter in reversed(self.__filters):
+            if item in bloom_filter:
                 return True
         return False
 
 
 def main():
-    bf = BloomFilter(10)
-    bf.add("Khoa")
+    
     pass
 
 
