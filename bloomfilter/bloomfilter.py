@@ -168,6 +168,10 @@ class ScalableBloomFilter(object):
         return len(self.__filters)
 
     @property
+    def filter_size(self):
+        return sum(bloom_filter.filter_size for bloom_filter in self.__filters)
+
+    @property
     def size(self):
         return sum(bloom_filter.size for bloom_filter in self.__filters)
 
@@ -186,7 +190,7 @@ class ScalableBloomFilter(object):
         return sum(len(bloom_filter) for bloom_filter in self.__filters)
 
     def add(self, item):
-        if item not in self:
+        if self.__filters and item not in self:
             bloom_filter = self.__filters[-1]
             if len(bloom_filter) >= bloom_filter.size:
                 bloom_filter = BloomFilter(
