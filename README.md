@@ -154,7 +154,6 @@ if __name__ == "__main__":
     bloom_filter_example()
     scalable_bloom_filter_example()
 ```
-
 ```
 ========== Bloom Filter Example ==========
 + Capacity: 1000 item(s)
