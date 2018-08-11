@@ -75,9 +75,9 @@ def bloom_filter_example():
                     f'"{animal}" is a FALSE POSITIVE case (please adjust fp_prob to a smaller value).'
                 )
             else:
-                print(f'"{animal}" is PROBABLY IN bloom filter.')
+                print(f'"{animal}" is PROBABLY IN the filter.')
         else:
-            print(f'"{animal}" is DEFINITELY NOT in bloom filter as expected.')
+            print(f'"{animal}" is DEFINITELY NOT IN the filter as expected.')
 
     # Save to file
     with open("bloom_filter.bin", "wb") as fp:
@@ -119,9 +119,9 @@ def scalable_bloom_filter_example():
                     f'"{animal}" is a FALSE POSITIVE case (please adjust fp_prob to a smaller value).'
                 )
             else:
-                print(f'"{animal}" is PROBABLY IN bloom filter.')
+                print(f'"{animal}" is PROBABLY IN the filter.')
         else:
-            print(f'"{animal}" is DEFINITELY NOT in bloom filter as expected.')
+            print(f'"{animal}" is DEFINITELY NOT IN the filter as expected.')
 
     # Save to file
     with open("scalable_bloom_filter.bin", "wb") as fp:
